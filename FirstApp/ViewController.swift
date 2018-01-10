@@ -48,7 +48,7 @@ class ViewController: UIViewController {
     
     var childView : UIView!
     //动作
-    var aniTapGesture, aniNewViewGesture, aniAddNewView : UIViewPropertyAnimator!
+    var aniTapGesture, aniNewViewGesture, aniAddNewView, aniShowNewView : UIViewPropertyAnimator!
     var aniLeftGesture, aniRightGesture, aniUpGesture : UIViewPropertyAnimator!
     var aniSlideToLeft, aniSlideToUp, aniSlideToRight : UIViewPropertyAnimator!
     
@@ -77,6 +77,7 @@ class ViewController: UIViewController {
         lockInit()
         
         childView = subViewInit()
+        showNewView()
         
         view.backgroundColor = VIEW_BACKGROUND_COLOR
     }
@@ -88,6 +89,7 @@ class ViewController: UIViewController {
         subView.addSubview(lblFront)
         subView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapView)))
         subView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(swipe)))
+        subView.alpha = 0
         view.addSubview(subView)
         isFront = true
         return subView
@@ -194,9 +196,11 @@ class ViewController: UIViewController {
     func aniInit() {
         aniTapGesture = UIViewPropertyAnimator(duration: 1, curve: .easeInOut, animations: {
             //页面翻转
+            if !self.isFront {return}
             UIView.setAnimationCurve(UIViewAnimationCurve.easeInOut)
             UIView.setAnimationTransition(UIViewAnimationTransition.flipFromRight, for: self.childView, cache: true)
             self.childView.subviews.map({$0.removeFromSuperview()})
+            self.btnInit()
             self.childView.addSubview(self.lblBack)
             self.childView.addSubview(self.btn_know)
             self.childView.addSubview(self.btn_notSure)
@@ -236,23 +240,34 @@ class ViewController: UIViewController {
             //滑向右边
             self.childView.transform = CGAffineTransform(translationX: self.SCREEN_WIDTH, y: self.getY(x: Double(self.SCREEN_WIDTH)))
             self.aniAddNewView.startAnimation(afterDelay: self.DURATION)
+            self.aniShowNewView.startAnimation(afterDelay: self.DURATION)
         })
         
         aniSlideToUp = UIViewPropertyAnimator(duration: DURATION, curve: .easeInOut, animations: {
             //滑向上
             self.childView.transform = CGAffineTransform(translationX: 0, y: -self.SCREEN_HEIGHT)
             self.aniAddNewView.startAnimation(afterDelay: self.DURATION)
+            self.aniShowNewView.startAnimation(afterDelay: self.DURATION)
         })
         
         aniSlideToLeft = UIViewPropertyAnimator(duration: DURATION, curve: .easeInOut, animations: {
             //滑向左边
             self.childView.transform = CGAffineTransform(translationX: -self.SCREEN_WIDTH, y: self.getY(x: Double(self.SCREEN_WIDTH)))
             self.aniAddNewView.startAnimation(afterDelay: self.DURATION)
+            self.aniShowNewView.startAnimation(afterDelay: self.DURATION)
         })
         
-        aniAddNewView = UIViewPropertyAnimator(duration: DURATION * 2, curve: .linear, animations: {
+        aniAddNewView = UIViewPropertyAnimator(duration: DURATION, curve: .linear, animations: {
             self.childView = self.subViewInit()
         })
+        
+        aniShowNewView = UIViewPropertyAnimator(duration: DURATION, curve: .linear, animations: {
+            self.showNewView()
+        })
+    }
+    
+    func showNewView() {
+        self.childView.alpha = 1
     }
     
     fileprivate func  getY(x: Double) -> CGFloat {
